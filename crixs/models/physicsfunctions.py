@@ -4,7 +4,7 @@ from scipy import signal
 
 
 # %%
-def resolution(x, center, fwhm):
+def resolution_func(x, center, fwhm):
     sigma = fwhm / 2 / np.sqrt(2 * np.log(2))
     return (
         1 / (sigma * np.sqrt(2 * np.pi)) * np.exp(-((x - center) ** 2 / 2 / sigma**2))
@@ -45,7 +45,7 @@ def bose(x, T):
 #     )
 
 
-def dho(x, amplitude, omega0, gamma, T):
+def dho_func(x, amplitude, omega0, gamma, T):
     """
     center = np.sqrt(omega0**2 - (gamma / 2) ** 2)
     area = amplitude * np.pi / 2 / center !!!
@@ -63,8 +63,8 @@ def dho(x, amplitude, omega0, gamma, T):
     )
 
 
-def func(x, area, center, width, resolution, T):
-    y1 = resolution(x, np.mean(x), resolution)
-    y2 = dho(x, area, center, width)
+def dho(x, area, center, width, resolution, T):
+    y1 = resolution_func(x, np.mean(x), resolution)
+    y2 = dho_func(x, area, center, width)
     y = signal.convolve(y1, y2, "same") * (abs(x[-1] - x[0]) / len(x))
     return y
