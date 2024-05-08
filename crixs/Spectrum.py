@@ -1,39 +1,17 @@
 # %%
 import numpy as np
 
-import Meta
 from .backpack import arraymanip
 
 
 # %%
-class Spectrum(metaclass=Meta._Meta):
+class Spectrum:
     """
      Returns a ``Spectrum`` object.
 
     Args:
         x (list or array, optional): x values (1D list/array).
         y (list or array, optional): y values (1D list/array).
-
-    How to initialize a Spectrum object:
-        **Empty**
-
-            >>> s = br.Spectrum()
-
-        **From array**
-
-            >>> s = br.Spectrum(x, y)
-            >>> s = br.Spectrum(y)
-            >>> s = br.Spectrum(x=x, y=y)
-            >>> s = br.Spectrum(y=y)
-
-        where ``x`` and ``y`` are 1D arrays (or list). If only y data is passed, a dummy
-        x-array will be set.
-
-    Attributes:
-        x (array): vector with x-coordinate values
-        y (array): vector with y-coordinate values
-        filepath (str or pathlib.Path): filepath associated with data.
-
     """
 
     def __init__(self, *args, **kwargs):
@@ -52,13 +30,19 @@ class Spectrum(metaclass=Meta._Meta):
             self._x = np.arange(len(self._y), dtype="float")
             return
         elif len(args) == 2:
-            self._x = np.array(args[0], dtype="float")
-            self._y = np.array(args[1], dtype="float")
-            return
+            if len(args[0]) == len(args[1]):
+                self._x = np.array(args[0], dtype="float")
+                self._y = np.array(args[1], dtype="float")
+                return
+            else:
+                raise ValueError("x and y not match")
 
         if "y" in kwargs:
             if "x" in kwargs:
-                self._x = np.array(kwargs["x"], dtype="float")
+                if len(kwargs["x"]) == len(kwargs["y"]):
+                    self._x = np.array(kwargs["x"], dtype="float")
+                else:
+                    raise ValueError("x and y not match")
             self._y = np.array(kwargs["y"], dtype="float")
             return
 
@@ -160,8 +144,12 @@ class Spectrum(metaclass=Meta._Meta):
 
     @x.setter
     def x(self, value):
-        if len(value) == len(self._x):
-            self._x = np.array(value, dtype="float")
+        if isinstance(value, (float, int)):
+            value = [value]
+            if len(value) == len(self._x):
+                self._x = np.array(value, dtype="float")
+            else:
+                raise ValueError("Can not change to different length.\n")
 
     @property
     def y(self):
@@ -169,8 +157,12 @@ class Spectrum(metaclass=Meta._Meta):
 
     @y.setter
     def y(self, value):
-        if len(value) == len(self._y):
-            self._y = np.array(value, dtype="float")
+        if isinstance(value, (float, int)):
+            value = [value]
+            if len(value) == len(self._y):
+                self._y = np.array(value, dtype="float")
+            else:
+                raise ValueError("Can not change to different length.\n")
 
     def __getitem__(self, item):
         """
@@ -190,8 +182,8 @@ class Spectrum(metaclass=Meta._Meta):
 
             indices = [i for i, val in enumerate(self.x) if start <= val < stop]
 
-            x = [self._x[i] for i in indices[::step]]
-            y = [self._y[i] for i in indices[::step]]
+            x = np.array([self._x[i] for i in indices[::step]])
+            y = np.array([self._y[i] for i in indices[::step]])
 
             return Spectrum(x=x, y=y)
 
@@ -211,8 +203,8 @@ class Spectrum(metaclass=Meta._Meta):
 
             # Check if the difference is within 1% of x step
             if nearest_index is not None and min_diff <= 0.01 * x_step:
-                x = self._x[nearest_index]
-                y = self._y[nearest_index]
+                x = np.array([self._x[nearest_index]])
+                y = np.array([self._y[nearest_index]])
 
                 s = Spectrum(x=x, y=y)
                 return s
