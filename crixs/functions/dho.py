@@ -11,6 +11,15 @@ def resolution(x, center, fwhm):
     )
 
 
+def bose(x, T):
+    """
+    Change to '+' to avoid divergency
+    """
+    kbt = 8.617e-5 * T
+    # return 1 - np.exp(-x / kbt)
+    return 1 + np.exp(-x / kbt)
+
+
 # def dho(x, area, omega1, gamma, T):
 
 #     '''
@@ -25,11 +34,10 @@ def resolution(x, center, fwhm):
 #     this function only valid for underdamped
 #     '''
 
-#     kbt = 8.617e-5 * T
 #     return (
 #         area
 #         / (np.pi)
-#         / (1 - np.exp(-x / kbt))
+#         / bose(x, T)
 #         * (
 #             gamma / 2 / ((x - omega1) ** 2 + (gamma / 2) ** 2)
 #             - gamma / 2 / ((x + omega1) ** 2 + (gamma / 2) ** 2)
@@ -38,20 +46,18 @@ def resolution(x, center, fwhm):
 
 
 def dho(x, amplitude, omega0, gamma, T):
-
-    '''
+    """
     center = np.sqrt(omega0**2 - (gamma / 2) ** 2)
     area = amplitude * np.pi / 2 / center !!!
     width = gamma
     height = a * area / gamma / np.pi
 
     dampingratio = gamma / 2 / omega0 # overdamped >1, underdamped <1
-    '''
+    """
 
-    kbt = 8.617e-5 * T
     return (
         amplitude
-        / (1 - np.exp( -x / kbt))
+        / bose(x, T)
         * (x * gamma)
         / ((x**2 - omega0**2) ** 2 + x**2 * gamma**2)
     )
