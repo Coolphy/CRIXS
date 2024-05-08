@@ -1,12 +1,12 @@
 # %%
 import numpy as np
 
-from Meta import _Metadata
+import Meta
 from .backpack import arraymanip
 
 
 # %%
-class Spectrum(metaclass=_Metadata):
+class Spectrum(metaclass=Meta._Meta):
     """
      Returns a ``Spectrum`` object.
 
