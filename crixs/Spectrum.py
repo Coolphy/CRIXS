@@ -12,135 +12,138 @@ class Spectrum:
     Args:
         x (list or array, optional): x values (1D list/array).
         y (list or array, optional): y values (1D list/array).
+        err (list or array, optional): error values (1D list/array).
+        mon (list or array, optional): monitor values (1D list/array).
+
+    Initialize:
+        **Empty**
+
+            >>> s = br.Spectrum()
+
+        **From array**
+
+            >>> s = br.Spectrum(y)
+            >>> s = br.Spectrum(x, y)
+            >>> s = br.Spectrum(x, y, err, mon)
+
+            >>> s = br.Spectrum(y=y)
+            >>> s = br.Spectrum(x=x, y=y)
+            >>> s = br.Spectrum(x=x, y=y, err=err, mon=mon)
+
+            >>> s = br.Spectrum(y, x=x, err=err, mon=mon)
+
     """
 
     def __init__(self, *args, **kwargs):
 
         self._x = np.array([], dtype="float")
         self._y = np.array([], dtype="float")
+        self._err = np.array([], dtype="float")
+        self._mon = np.array([], dtype="float")
 
-        error_message = "Can not generate spectrum"
-        if len(args) > 2 or len(kwargs) > 2:
+        error_message = "Initialize error"
+        if len(args) > 4 or len(args) == 3 or len(kwargs) > 4:
             raise ValueError(error_message)
-        if any([item not in ["x", "y"] for item in kwargs.keys()]):
+        if any([item not in ["x", "y", "err", "mon"] for item in kwargs.keys()]):
             raise ValueError(error_message)
 
         if len(args) == 1:
             self._y = np.array(args[0], dtype="float")
             self._x = np.arange(len(self._y), dtype="float")
+            self._err = np.sqrt(self._y)
+            self._mon = np.ones(len(self._y), dtype="float")
+
+            if "x" in kwargs:
+
+                if len(kwargs["x"]) == len(self._y):
+                    self._x = np.array(kwargs["x"], dtype="float")
+                else:
+                    raise ValueError("x and y not match")
+
+            if "err" in kwargs:
+
+                if len(kwargs["err"]) == len(self._y):
+                    self._err = np.array(kwargs["err"], dtype="float")
+                else:
+                    raise ValueError("y and err not match")
+
+            if "mon" in kwargs:
+
+                if len(kwargs["mon"]) == len(self._y):
+                    self._mon = np.array(kwargs["mon"], dtype="float")
+                else:
+                    raise ValueError("y and mon not match")
+
             return
+
         elif len(args) == 2:
             if len(args[0]) == len(args[1]):
                 self._x = np.array(args[0], dtype="float")
                 self._y = np.array(args[1], dtype="float")
+                self._err = np.sqrt(self._y)
+                self._mon = np.ones(len(self._y), dtype="float")
+
+                if "err" in kwargs:
+
+                    if len(kwargs["err"]) == len(self._y):
+                        self._err = np.array(kwargs["err"], dtype="float")
+                    else:
+                        raise ValueError("y and err not match")
+
+                if "mon" in kwargs:
+
+                    if len(kwargs["mon"]) == len(self._y):
+                        self._mon = np.array(kwargs["mon"], dtype="float")
+                    else:
+                        raise ValueError("y and mon not match")
+
                 return
+
             else:
                 raise ValueError("x and y not match")
 
-        if "y" in kwargs:
+        elif len(args) == 4:
+            if len(args[0]) == len(args[1]) == len(args[2]) == len(args[3]):
+                self._x = np.array(args[0], dtype="float")
+                self._y = np.array(args[1], dtype="float")
+                self._err = np.array(args[2], dtype="float")
+                self._mon = np.array(args[3], dtype="float")
+                return
+
+            else:
+                raise ValueError("x and y not match")
+
+        elif len(args) == 0 and "y" in kwargs:
+
+            self._y = np.array(kwargs["y"], dtype="float")
+
             if "x" in kwargs:
+
                 if len(kwargs["x"]) == len(kwargs["y"]):
                     self._x = np.array(kwargs["x"], dtype="float")
                 else:
                     raise ValueError("x and y not match")
+
+            if "err" in kwargs:
+
+                if len(kwargs["err"]) == len(kwargs["y"]):
+                    self._err = np.array(kwargs["err"], dtype="float")
+                else:
+                    raise ValueError("y and err not match")
+
+            if "mon" in kwargs:
+
+                if len(kwargs["mon"]) == len(kwargs["y"]):
+                    self._mon = np.array(kwargs["mon"], dtype="float")
+                else:
+                    raise ValueError("y and mon not match")
+
             self._y = np.array(kwargs["y"], dtype="float")
             return
 
-    def __len__(self):
-        if self._x is None:
-            raise ValueError("No spectrum yet.\n")
-        else:
-            return len(self._x)
-
-    def __add__(self, object):
-        if isinstance(object, Spectrum):
-            if arraymanip.check_array_same(self._x, object.x):
-                final = Spectrum(x=self._x, y=self._y + object.y)
-            else:
-                raise ValueError("Spectrum x is different.\n")
-
-        elif isinstance(object, np.floating):
-            if len(self._y) == len(object):
-                final = Spectrum(x=self._x, y=self._y + object)
-            else:
-                raise ValueError("Spectrum length is different.\n")
-
-        elif isinstance(object, (float, int)):
-            final = Spectrum(x=self._x, y=self._y + object)
-        else:
-            raise ValueError(f"Cannot operate type {type(object)} with type Spectrum")
-
-        return final
-
-    def __sub__(self, object):
-        if isinstance(object, Spectrum):
-            if arraymanip.check_array_same(self._x, object.x):
-                final = Spectrum(x=self._x, y=self._y - object.y)
-            else:
-                raise ValueError("Spectrum x is different.\n")
-
-        elif isinstance(object, np.floating):
-            if len(self._y) == len(object):
-                final = Spectrum(x=self._x, y=self._y - object)
-            else:
-                raise ValueError("Spectrum length is different.\n")
-
-        elif isinstance(object, (float, int)):
-            final = Spectrum(x=self._x, y=self._y - object)
-        else:
-            raise ValueError(f"Cannot operate type {type(object)} with type Spectrum")
-
-        return final
-
-    def __mul__(self, object):
-        if isinstance(object, Spectrum):
-            if arraymanip.check_array_same(self._x, object.x):
-                final = Spectrum(x=self._x, y=self._y * object.y)
-            else:
-                raise ValueError("Spectrum x is different.\n")
-
-        elif isinstance(object, np.floating):
-            if len(self._y) == len(object):
-                final = Spectrum(x=self._x, y=self._y * object)
-            else:
-                raise ValueError("Spectrum length is different.\n")
-
-        elif isinstance(object, (float, int)):
-            final = Spectrum(x=self._x, y=self._y * object)
-        else:
-            raise ValueError(f"Cannot operate type {type(object)} with type Spectrum")
-
-        return final
-
-    def __turediv__(self, object):
-        if isinstance(object, Spectrum):
-            if arraymanip.check_array_same(self._x, object.x):
-                if 0 in object.y:
-                    raise ValueError("ZeroDivisionError.\n")
-                else:
-                    final = Spectrum(x=self._x, y=self._y / object.y)
-            else:
-                raise ValueError("Spectrum x is different.\n")
-
-        elif isinstance(object, np.floating):
-            if len(self._y) == len(object):
-                if 0 in object.y:
-                    raise ValueError("ZeroDivisionError.\n")
-                else:
-                    final = Spectrum(x=self._x, y=self._y / object)
-            else:
-                raise ValueError("Spectrum length is different.\n")
-
-        elif isinstance(object, (float, int)):
-            final = Spectrum(x=self._x, y=self._y / object)
-        else:
-            raise ValueError(f"Cannot operate type {type(object)} with type Spectrum")
-
-        return final
-
     @property
     def x(self):
-        return self._x
+        return self._x + 0
 
     @x.setter
     def x(self, value):
@@ -153,7 +156,7 @@ class Spectrum:
 
     @property
     def y(self):
-        return self._y
+        return self._y + 0
 
     @y.setter
     def y(self, value):
@@ -163,6 +166,181 @@ class Spectrum:
                 self._y = np.array(value, dtype="float")
             else:
                 raise ValueError("Can not change to different length.\n")
+
+    @property
+    def err(self):
+        return self._err + 0
+
+    @err.setter
+    def err(self, value):
+        if isinstance(value, (float, int)):
+            value = [value]
+            if len(value) == len(self._err):
+                self._err = np.array(value, dtype="float")
+            else:
+                raise ValueError("Can not change to different length.\n")
+
+    @property
+    def mon(self):
+        return self._mon + 0
+
+    @mon.setter
+    def mon(self, value):
+        if isinstance(value, (float, int)):
+            value = [value]
+            if len(value) == len(self._mon):
+                self._mon = np.array(value, dtype="float")
+            else:
+                raise ValueError("Can not change to different length.\n")
+
+    def __len__(self):
+        if self._y is None:
+            raise ValueError("No spectrum yet.\n")
+        else:
+            return len(self._y)
+
+    def __add__(self, object):
+        if isinstance(object, Spectrum):
+            if arraymanip.check_array_same(self._x, object.x):
+                final = Spectrum(
+                    x=self._x,
+                    y=self._y + object.y,
+                    err=np.sqrt(self._err**2 + object.err**2),
+                    mon=self._mon + object.mon,
+                )
+            else:
+                raise ValueError("Spectrum x is different.\n")
+
+        elif isinstance(object, np.floating):
+            if len(self._y) == len(object):
+                final = Spectrum(
+                    x=self._x, y=self._y + object, err=self._err, mon=self._mon
+                )
+            else:
+                raise ValueError("Spectrum length is different.\n")
+
+        elif isinstance(object, (float, int)):
+            final = Spectrum(
+                x=self._x, y=self._y + object, err=self._err, mon=self._mon
+            )
+        else:
+            raise ValueError(f"Cannot operate type {type(object)} with type Spectrum")
+
+        return final
+
+    def __sub__(self, object):
+        if isinstance(object, Spectrum):
+            if arraymanip.check_array_same(
+                self._x, object.x
+            ) and arraymanip.check_array_same(self._mon, object.mon):
+                final = Spectrum(
+                    x=self._x,
+                    y=self._y - object.y,
+                    err=np.sqrt(self._err**2 + object.err**2),
+                    mon=(self._mon + object.mon) / 2,
+                )
+            else:
+                raise ValueError("Spectrum is different.\n")
+
+        elif isinstance(object, np.floating):
+            if len(self._y) == len(object):
+                final = Spectrum(
+                    x=self._x, y=self._y - object, err=self._err, mon=self._mon
+                )
+            else:
+                raise ValueError("Spectrum length is different.\n")
+
+        elif isinstance(object, (float, int)):
+            final = Spectrum(
+                x=self._x, y=self._y - object, err=self._err, mon=self._mon
+            )
+        else:
+            raise ValueError(f"Cannot operate type {type(object)} with type Spectrum")
+
+        return final
+
+    def __mul__(self, object):
+        if isinstance(object, Spectrum):
+            if arraymanip.check_array_same(self._x, object.x):
+                final = Spectrum(
+                    x=self._x,
+                    y=self._y * object.y,
+                    err=np.sqrt(
+                        (np.mean(object.y) * self._err) ** 2
+                        + (np.mean(self._y) * object.err) ** 2
+                    ),
+                    mon=self._mon * object.mon,
+                )
+            else:
+                raise ValueError("Spectrum x is different.\n")
+
+        elif isinstance(object, np.floating):
+            if len(self._y) == len(object):
+                final = Spectrum(
+                    x=self._x,
+                    y=self._y * object,
+                    err=self._err * object,
+                    mon=self._mon * object,
+                )
+            else:
+                raise ValueError("Spectrum length is different.\n")
+
+        elif isinstance(object, (float, int)):
+            final = Spectrum(
+                x=self._x,
+                y=self._y * object,
+                err=self._err * object,
+                mon=self._mon * object,
+            )
+        else:
+            raise ValueError(f"Cannot operate type {type(object)} with type Spectrum")
+
+        return final
+
+    def __turediv__(self, object):
+        if isinstance(object, Spectrum):
+            if arraymanip.check_array_same(self._x, object.x):
+                if 0 in object.y:
+                    raise ValueError("ZeroDivisionError.\n")
+                else:
+                    final = Spectrum(
+                        x=self._x,
+                        y=self._y / object.y,
+                        err=np.sqrt(
+                            (self._err / np.mean(object.y)) ** 2
+                            + (np.mean(self._y) * object.err / np.mean(object.y) ** 2)
+                            ** 2
+                        ),
+                        mon=self._mon / object.mon,
+                    )
+            else:
+                raise ValueError("Spectrum x is different.\n")
+
+        elif isinstance(object, np.floating):
+            if len(self._y) == len(object):
+                if 0 in object.y:
+                    raise ValueError("ZeroDivisionError.\n")
+                else:
+                    final = Spectrum(
+                        x=self._x,
+                        y=self._y / object,
+                        err=self._err / object,
+                        mon=self._mon / object,
+                    )
+            else:
+                raise ValueError("Spectrum length is different.\n")
+
+        elif isinstance(object, (float, int)):
+            final = Spectrum(
+                x=self._x,
+                y=self._y / object,
+                err=self._err / object,
+                mon=self._mon / object,
+            )
+        else:
+            raise ValueError(f"Cannot operate type {type(object)} with type Spectrum")
+
+        return final
 
     def __getitem__(self, item):
         """
@@ -184,8 +362,10 @@ class Spectrum:
 
             x = np.array([self._x[i] for i in indices[::step]])
             y = np.array([self._y[i] for i in indices[::step]])
+            err = np.array([self._err[i] for i in indices[::step]])
+            mon = np.array([self._mon[i] for i in indices[::step]])
 
-            return Spectrum(x=x, y=y)
+            return Spectrum(x=x, y=y, err=err, mon=mon)
 
         elif isinstance(item, (int, float)):
             # Single value
@@ -205,9 +385,10 @@ class Spectrum:
             if nearest_index is not None and min_diff <= 0.01 * x_step:
                 x = np.array([self._x[nearest_index]])
                 y = np.array([self._y[nearest_index]])
+                err = np.array([self._err[nearest_index]])
+                mon = np.array([self._mon[nearest_index]])
 
-                s = Spectrum(x=x, y=y)
-                return s
+                return Spectrum(x=x, y=y, err=err, mon=mon)
 
             else:
                 raise ValueError("x value not found")
@@ -225,22 +406,28 @@ class Spectrum:
         """
         combined_x = np.copy(self._x)
         combined_y = np.copy(self._y)
+        combined_err = np.copy(self._err)
+        combined_mon = np.copy(self._mon)
 
         for arg in args:
             if isinstance(arg, Spectrum):
                 combined_x = np.append(combined_x, arg._x)
                 combined_y = np.append(combined_y, arg._y)
+                combined_err = np.append(combined_err, arg._err)
+                combined_mon = np.append(combined_mon, arg._mon)
             elif isinstance(arg, list):
                 for spectrum in arg:
                     if isinstance(spectrum, Spectrum):
                         combined_x = np.append(combined_x, spectrum._x)
                         combined_y = np.append(combined_y, spectrum._y)
+                        combined_err = np.append(combined_err, spectrum._err)
+                        combined_mon = np.append(combined_mon, spectrum._mon)
                     else:
                         raise ValueError("Can only append Spectrum objects.")
             else:
                 raise ValueError("Can only append Spectrum objects.")
 
-        return Spectrum(combined_x, combined_y)
+        return Spectrum(combined_x, combined_y, combined_err, combined_mon)
 
     @classmethod
     def append(cls, *args):
@@ -249,22 +436,28 @@ class Spectrum:
         """
         combined_x = np.array([])
         combined_y = np.array([])
+        combined_err = np.array([])
+        combined_mon = np.array([])
 
         for arg in args:
             if isinstance(arg, Spectrum):
                 combined_x = np.append(combined_x, arg._x)
                 combined_y = np.append(combined_y, arg._y)
+                combined_err = np.append(combined_err, arg._err)
+                combined_mon = np.append(combined_mon, arg._mon)
             elif isinstance(arg, list):
                 for spectrum in arg:
                     if isinstance(spectrum, Spectrum):
                         combined_x = np.append(combined_x, spectrum._x)
                         combined_y = np.append(combined_y, spectrum._y)
+                        combined_err = np.append(combined_err, spectrum._err)
+                        combined_mon = np.append(combined_mon, spectrum._mon)
                     else:
                         raise ValueError("Can only append Spectrum objects.")
             else:
                 raise ValueError("Can only append Spectrum objects.")
 
-        return cls(combined_x, combined_y)
+        return cls(combined_x, combined_y, combined_err, combined_mon)
 
 
 # %%

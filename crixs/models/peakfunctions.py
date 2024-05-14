@@ -23,8 +23,8 @@ def gaussian_fwhm(x, amplitude, center, fwhm):
 
 def gaussian(x, area, center, fwhm):
     """gaussian(x, area, center, fwhm)"""
-    amplitude = area / (np.sqrt(2 * np.pi) * sigma)
     sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
+    amplitude = area / (np.sqrt(2 * np.pi) * sigma)
     return gaussian_func(x, amplitude, center, sigma)
 
 
