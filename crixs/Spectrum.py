@@ -1,7 +1,6 @@
 # %%
 import numpy as np
-
-from backpack import arraymanip
+from .backpack import arraymanip
 
 
 # %%

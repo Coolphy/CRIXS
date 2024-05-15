@@ -2,9 +2,9 @@
 import numpy as np
 import lmfit as lf
 
-from Spectrum import Spectrum
+from .Spectrum import Spectrum
 
-from models import *
+from .models import *
 
 
 # %%
@@ -27,7 +27,7 @@ class Fitting:
         fitted spectrum = ft.out(name)
 
         """
-        self._data = Spectrum()
+        self._spectrum = Spectrum()
         self._model = None
         self._params = None
         self._out = None
@@ -66,6 +66,13 @@ class Fitting:
         """
         return self._params
 
+    @property
+    def specturm(self):
+        """
+        copy of Parameters in lmfit
+        """
+        return self._spectrum
+
     def init(self, params, *args, **kwargs):
         """
         Initialize with lmfit parameters
@@ -94,14 +101,19 @@ class Fitting:
         else:
             raise ValueError("Unknown input")
 
-    def fit(self, spec):
+    def fit(self, *spec):
         """
         fit spectrum with model
         """
-        if isinstance(spec, Spectrum):
-            self._data = spec
-            print(self._data)
-            self._out = self._model.fit(self._data.y, self._params, x=self._data.x)
+        if len(spec) == 0:
+            self._out = self._model.fit(
+                self._spectrum.y, self._params, x=self._spectrum.x
+            )
+        elif len(spec) == 1 and isinstance(spec[0], Spectrum):
+            self._spectrum = spec[0]
+            self._out = self._model.fit(
+                self._spectrum.y, self._params, x=self._spectrum.x
+            )
         else:
             raise ValueError("Input must be a spectrum")
 
@@ -111,30 +123,33 @@ class Fitting:
         out = Fitting.out('Name')
         """
         if len(name) == 0:
-            dely = self._out.eval_uncertainty(self._params, x=self._data.x, sigma=1)
+            dely = self._out.eval_uncertainty(self._params, x=self._spectrum.x, sigma=1)
             return Spectrum(
-                x=self._data.x,
+                x=self._spectrum.x,
                 y=self._out.best_fit,
                 err=dely,
-                mon=self._data.mon,
+                mon=self._spectrum.mon,
             )
-        else:
-            comps = self._out.eval_components(self._params, x=self._data.x)
-            dely = self._out.eval_uncertainty(self._params, x=self._data.x, sigma=1)
+        elif len(name) == 1:
+            comps = self._out.eval_components(x=self._spectrum.x)
+            dely = self._out.eval_uncertainty(self._params, x=self._spectrum.x, sigma=1)
             if not hasattr(self._out, "dely_comps"):
+                print("True")
                 return Spectrum(
-                    x=self._data.x,
-                    y=self._out.best_fit,
+                    x=self._spectrum.x,
+                    y=comps[name[0]],
                     err=dely,
-                    mon=self._data.mon,
+                    mon=self._spectrum.mon,
                 )
             else:
                 return Spectrum(
-                    x=self._data.x,
+                    x=self._spectrum.x,
                     y=comps[name[0]],
                     err=self._out.dely_comps[name[0]],
-                    mon=self._data.mon,
+                    mon=self._spectrum.mon,
                 )
+        else:
+            raise ValueError("Unknown input!")
 
     @property
     def result(self):
