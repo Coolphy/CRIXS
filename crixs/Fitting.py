@@ -123,7 +123,7 @@ class Fitting:
         out = Fitting.out('Name')
         """
         if len(name) == 0:
-            dely = self._out.eval_uncertainty(self._params, x=self._spectrum.x, sigma=1)
+            dely = self._out.eval_uncertainty(x=self._spectrum.x, sigma=1)
             return Spectrum(
                 x=self._spectrum.x,
                 y=self._out.best_fit,
@@ -132,22 +132,13 @@ class Fitting:
             )
         elif len(name) == 1:
             comps = self._out.eval_components(x=self._spectrum.x)
-            dely = self._out.eval_uncertainty(self._params, x=self._spectrum.x, sigma=1)
-            if not hasattr(self._out, "dely_comps"):
-                print("True")
-                return Spectrum(
-                    x=self._spectrum.x,
-                    y=comps[name[0]],
-                    err=dely,
-                    mon=self._spectrum.mon,
-                )
-            else:
-                return Spectrum(
-                    x=self._spectrum.x,
-                    y=comps[name[0]],
-                    err=self._out.dely_comps[name[0]],
-                    mon=self._spectrum.mon,
-                )
+            dely = self._out.eval_uncertainty(x=self._spectrum.x, sigma=1)
+            return Spectrum(
+                x=self._spectrum.x,
+                y=comps[name[0]],
+                err=self._out.dely_comps[name[0]],
+                mon=self._spectrum.mon,
+            )
         else:
             raise ValueError("Unknown input!")
 
