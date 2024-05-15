@@ -1,7 +1,7 @@
 # %%
 import numpy as np
 
-from .backpack import arraymanip
+from backpack import arraymanip
 
 
 # %%
@@ -400,14 +400,7 @@ class Spectrum:
                 )
             )
 
-    def append(self, *args):
-        """
-        Append multiple Spectrum objects together to the current instance.
-        """
-        combined_x = np.copy(self._x)
-        combined_y = np.copy(self._y)
-        combined_err = np.copy(self._err)
-        combined_mon = np.copy(self._mon)
+    def _append_static(combined_x, combined_y, combined_err, combined_mon, *args):
 
         for arg in args:
             if isinstance(arg, Spectrum):
@@ -427,7 +420,20 @@ class Spectrum:
             else:
                 raise ValueError("Can only append Spectrum objects.")
 
-        return Spectrum(combined_x, combined_y, combined_err, combined_mon)
+        return Spectrum(x=combined_x, y=combined_y, err=combined_err, mon=combined_mon)
+
+    # def append(self, *args):
+    #     """
+    #     Append multiple Spectrum objects together to the current instance.
+    #     """
+    #     combined_x = np.copy(self._x)
+    #     combined_y = np.copy(self._y)
+    #     combined_err = np.copy(self._err)
+    #     combined_mon = np.copy(self._mon)
+
+    #     return self._append_static(
+    #         combined_x, combined_y, combined_err, combined_mon, *args
+    #     )
 
     @classmethod
     def append(cls, *args):
@@ -439,25 +445,37 @@ class Spectrum:
         combined_err = np.array([])
         combined_mon = np.array([])
 
-        for arg in args:
-            if isinstance(arg, Spectrum):
-                combined_x = np.append(combined_x, arg._x)
-                combined_y = np.append(combined_y, arg._y)
-                combined_err = np.append(combined_err, arg._err)
-                combined_mon = np.append(combined_mon, arg._mon)
-            elif isinstance(arg, list):
-                for spectrum in arg:
-                    if isinstance(spectrum, Spectrum):
-                        combined_x = np.append(combined_x, spectrum._x)
-                        combined_y = np.append(combined_y, spectrum._y)
-                        combined_err = np.append(combined_err, spectrum._err)
-                        combined_mon = np.append(combined_mon, spectrum._mon)
-                    else:
-                        raise ValueError("Can only append Spectrum objects.")
-            else:
-                raise ValueError("Can only append Spectrum objects.")
+        return cls._append_static(
+            combined_x, combined_y, combined_err, combined_mon, *args
+        )
 
-        return cls(combined_x, combined_y, combined_err, combined_mon)
+    # def normalize(self):
+    #     final = Spectrum(
+    #         x=self._x,
+    #         y=self._y / self._mon,
+    #         err=self._err / self._mon,
+    #         mon=self._mon / self._mon,
+    #     )
+    #     return final
+
+    @classmethod
+    def normalize(cls, object):
+        if isinstance(object, Spectrum):
+            final = Spectrum(
+                x=object._x,
+                y=object._y / object._mon,
+                err=object._err / object._mon,
+                mon=object._mon / object._mon,
+            )
+        return final
 
 
+# %%
+if __name__ == "__main__":
+    pass
+    ss = Spectrum
+    s1 = ss([0, 1])
+    s2 = ss([10, 20])
+    s3 = ss.append(s1, s2)
+    s4 = ss.normalize(s3)
 # %%
