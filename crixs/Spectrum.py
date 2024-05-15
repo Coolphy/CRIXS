@@ -6,20 +6,25 @@ from .backpack import arraymanip
 # %%
 class Spectrum:
     """
-     Returns a ``Spectrum`` object.
-
     Args:
-        x (list or array, optional): x values (1D list/array).
-        y (list or array, optional): y values (1D list/array).
-        err (list or array, optional): error values (1D list/array).
-        mon (list or array, optional): monitor values (1D list/array).
+        x : x values (1D list/array).
+        y : y values (1D list/array).
+        err : stderr values (1D list/array).
+        mon : monitor values (1D list/array).
+    """
 
-    Initialize:
-        **Empty**
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize:
+
+            **Empty**
 
             >>> s = br.Spectrum()
 
-        **From array**
+            **From array**
+
+            y array like
+            x,err,mon array like (optional)
 
             >>> s = br.Spectrum(y)
             >>> s = br.Spectrum(x, y)
@@ -30,10 +35,7 @@ class Spectrum:
             >>> s = br.Spectrum(x=x, y=y, err=err, mon=mon)
 
             >>> s = br.Spectrum(y, x=x, err=err, mon=mon)
-
-    """
-
-    def __init__(self, *args, **kwargs):
+        """
 
         self._x = np.array([], dtype="float")
         self._y = np.array([], dtype="float")

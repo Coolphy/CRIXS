@@ -12,20 +12,7 @@ class Fitting:
 
     def __init__(self):
         """
-        A shell of lmfit model
-
-        ft = Fitting()
-
-        ft.model(function,prefix=name)
-
-        ft.init(Params_init)
-
-        ft.fit(Spectrum)
-
-        fiting result = ft.result()
-
-        fitted spectrum = ft.out(name)
-
+        Shell of lmfit.Model
         """
         self._spectrum = Spectrum()
         self._model = None
@@ -35,8 +22,6 @@ class Fitting:
 
     def modeling(self, *args, **kwargs):
         """
-        Shell of lmfit.Model
-
         model = Model(function,prefix='Name')
         """
 
@@ -49,35 +34,56 @@ class Fitting:
             self._model += mod
             self._params += mod.make_params()
 
-        for param in self._params.values():
-            param.set(value=1)
+        self.init()
 
     @property
     def model(self):
-        """
-        copy of Parameters in lmfit
-        """
         return self._model
+
+    @model.setter
+    def model(self, model):
+        if isinstance(model, lf.Model):
+            self._model = model
+        else:
+            raise ValueError("Unacceptable")
 
     @property
     def params(self):
-        """
-        copy of Parameters in lmfit
-        """
         return self._params
 
+    @params.setter
+    def params(self, *params):
+        if len(params) == 1 and isinstance(params[0], lf.Parameters):
+            self._update(params[0])
+        else:
+            raise ValueError("Unacceptable")
+
     @property
-    def specturm(self):
-        """
-        copy of Parameters in lmfit
-        """
+    def spectrum(self):
         return self._spectrum
 
-    def init(self, params, *args, **kwargs):
+    @spectrum.setter
+    def spectrum(self, spectrum):
+        if isinstance(spectrum, Spectrum):
+            self._spectrum = spectrum
+        else:
+            raise ValueError("Unacceptable")
+
+    def init(self, *params):
         """
         Initialize with lmfit parameters
         """
+        for param in self._params.values():
+            param.set(value=1)
+        if len(params) == 1 and isinstance(params[0], lf.Parameters):
+            self._update(params[0])
+        else:
+            raise ValueError("Unacceptable")
 
+    def _update(self, params):
+        """
+        accept Parameters, dictionaray of parameter
+        """
         if isinstance(params, lf.Parameters):
             self._params.update(params)
         elif isinstance(params, dict):
@@ -94,9 +100,10 @@ class Fitting:
                     kwargs["max"] = param["max"]
                 if "expr" in param:
                     kwargs["expr"] = param["expr"]
+                if "brute_step" in param:
+                    kwargs["brute_step"] = param["brute_step"]
 
                 params_init.add(param_name, **kwargs)
-
             self._params.update(params_init)
         else:
             raise ValueError("Unknown input")
@@ -119,7 +126,7 @@ class Fitting:
 
     def out(self, *name):
         """
-        get fitting output
+        get fitting output line
         out = Fitting.out('Name')
         """
         if len(name) == 0:
@@ -145,7 +152,7 @@ class Fitting:
     @property
     def result(self):
         """
-        get fitting results of parameters
+        put fitting results of parameters into a dictionary
         """
         for name, param in self._out.params.items():
             self._result[name] = {}
@@ -167,9 +174,9 @@ if __name__ == "__main__":
 
     ft.modeling(func, prefix="g_")
 
-    # Params_init = {
-    #     "gb": {"value": 0},
-    # }
+    Params_init = {
+        "gb": {"value": 0},
+    }
 
     ft.init(Params_init)
 
