@@ -5,7 +5,6 @@ from .Fitting import Fitting
 class Spectrum(Spectrum):
     """
     Initialize:
-        >>> ss = Spectrum()
         >>> ss = Spectrum(x, y)
         >>> ss = Spectrum(x=x, y=y, err=err, mon=mon)
     """

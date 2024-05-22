@@ -75,7 +75,9 @@ class Fitting:
         """
         for param in self._params.values():
             param.set(value=1)
-        if len(params) == 1 and isinstance(params[0], lf.Parameters):
+        if len(params) == 0:
+            pass
+        elif len(params) == 1 and isinstance(params[0], lf.Parameters):
             self._update(params[0])
         else:
             raise ValueError("Unacceptable")

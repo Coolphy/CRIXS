@@ -51,7 +51,7 @@ class Spectrum:
         if len(args) == 1:
             self._y = np.array(args[0], dtype="float")
             self._x = np.arange(len(self._y), dtype="float")
-            self._err = np.sqrt(self._y)
+            self._err = np.sqrt(np.abs(self._y))
             self._mon = np.ones(len(self._y), dtype="float")
 
             if "x" in kwargs:
@@ -81,7 +81,7 @@ class Spectrum:
             if len(args[0]) == len(args[1]):
                 self._x = np.array(args[0], dtype="float")
                 self._y = np.array(args[1], dtype="float")
-                self._err = np.sqrt(self._y)
+                self._err = np.sqrt(np.abs(self._y))
                 self._mon = np.ones(len(self._y), dtype="float")
 
                 if "err" in kwargs:
@@ -117,6 +117,9 @@ class Spectrum:
         elif len(args) == 0 and "y" in kwargs:
 
             self._y = np.array(kwargs["y"], dtype="float")
+            self._x = np.arange(len(self._y), dtype="float")
+            self._err = np.sqrt(np.abs(self._y))
+            self._mon = np.ones(len(self._y), dtype="float")
 
             if "x" in kwargs:
 
