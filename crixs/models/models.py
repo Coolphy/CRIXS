@@ -20,7 +20,7 @@ def bose(x, T):
     return 1 + np.exp(-x / kbt)
 
 
-# def dho(x, area, omega1, gamma, T):
+# def dho_func(x, area, omega1, gamma, T):
 
 #     '''
 #     center = omega1
