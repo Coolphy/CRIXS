@@ -1,6 +1,5 @@
 # %%
 import numpy as np
-from scipy.special import erf
 
 
 # %%
@@ -35,7 +34,7 @@ def lorentz_func(x, amplitude, center, gamma):
 
 def lorentz_fwhm(x, amplitude, center, fwhm):
     """lorentz_fwhm(x, amplitude, center, fwhm)"""
-    gamma = fwhm
+    gamma = fwhm / 2
     return lorentz_func(x, amplitude, center, gamma)
 
 

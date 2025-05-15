@@ -9,6 +9,30 @@ from .models import *
 
 # %%
 class Fitting:
+    """
+    def func(x, a, b):
+    return a * x + b
+
+    ft = Fitting()
+
+    ft.modeling(func, prefix="g_")
+
+    Params_init = {
+        "gb": {"value": 0},
+    }
+
+    ft.init(Params_init)
+
+    x = np.linspace(-1, 1, 100)
+    y = np.cos(x)
+    ss = Spectrum(x, y)
+
+    ft.fit(ss)
+
+    result = ft.result
+
+    line = ft.out()
+    """
 
     def __init__(self):
         """
@@ -71,20 +95,45 @@ class Fitting:
 
     def init(self, *params):
         """
-        Initialize with lmfit parameters
+        Initialize with lmfit parameters or a dictionary
+
+        {
+        Param name : { param : value }
+        }
+
+        name (str)  Name of the Parameter.
+
+        value (float, optional)  Numerical Parameter value.
+
+        vary (bool, optional)  Whether the Parameter is varied during a fit (default is True).
+
+        min (float, optional)  Lower bound for value (default is -numpy.inf, no lower bound).
+
+        max (float, optional)  Upper bound for value (default is numpy.inf, no upper bound).
+
+        expr (str, optional)  Mathematical expression used to constrain the value during the fit (default is None).
+
+        brute_step (float, optional)  Step size for grid points in the brute method (default is None).
+
+        user_data (optional)  User-definable extra attribute used for a Parameter (default is None).
+
         """
         for param in self._params.values():
             param.set(value=1)
         if len(params) == 0:
             pass
-        elif len(params) == 1 and isinstance(params[0], lf.Parameters):
-            self._update(params[0])
+        # elif len(params) == 1 and isinstance(params[0], lf.Parameters):
+
+        # self._update(params[0])
         else:
-            raise ValueError("Unacceptable")
+            # raise ValueError("Must be a Parameters.")
+            for param in params:
+                self._update(param)
 
     def _update(self, params):
         """
         accept Parameters, dictionaray of parameter
+
         """
         if isinstance(params, lf.Parameters):
             self._params.update(params)
@@ -114,6 +163,7 @@ class Fitting:
         """
         fit spectrum with model
         """
+
         if len(spec) == 0:
             self._out = self._model.fit(
                 self._spectrum.y, self._params, x=self._spectrum.x
@@ -123,6 +173,18 @@ class Fitting:
             self._out = self._model.fit(
                 self._spectrum.y, self._params, x=self._spectrum.x
             )
+        else:
+            raise ValueError("Input must be a spectrum")
+
+    def eval(self, *spec):
+        """
+        eval spectrum with initial parameters
+        """
+        if len(spec) == 0:
+            self._out = self._model.eval(self._params, x=self._spectrum.x)
+        elif len(spec) == 1 and isinstance(spec[0], Spectrum):
+            self._spectrum = spec[0]
+            self._out = self._model.eval(self._params, x=self._spectrum.x)
         else:
             raise ValueError("Input must be a spectrum")
 

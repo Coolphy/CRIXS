@@ -1,6 +1,7 @@
 # %%
 import numpy as np
 from scipy import signal
+from scipy import interpolate
 
 
 # %%
@@ -63,8 +64,16 @@ def dho_func(x, amplitude, omega0, gamma, T):
     )
 
 
-def dho(x, area, center, width, resolution, T):
-    y1 = resolution_func(x, np.mean(x), resolution)
-    y2 = dho_func(x, area, center, width)
-    y = signal.convolve(y1, y2, "same") * (abs(x[-1] - x[0]) / len(x))
+def dho(x, area, center, width, resolution, T=20):
+    """dho(x, area, center, width, resolution, T)"""
+
+    x_int = np.linspace(x[0], x[-1], int(1000 / center))
+
+    y1 = dho_func(x_int, area, center, width, T)
+    y2 = resolution(x_int, np.mean(x), resolution)
+    y = signal.convolve(y1, y2, "same") * abs(x_int[1] - x_int[0])
+
+    f = interpolate.interp1d(x_int, y)
+    y = f(x)
+
     return y
